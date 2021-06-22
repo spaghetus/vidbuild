@@ -1,12 +1,11 @@
-use crate::spec::{Asset, Spec};
+use crate::spec::Spec;
 use png::Encoder;
 use rayon::prelude::*;
 use serde::Deserialize;
 use serde_json::Value;
 use std::{
 	collections::HashMap,
-	fmt::write,
-	fs, path,
+	fs,
 	sync::{Arc, RwLock},
 	time::Duration,
 };
@@ -40,6 +39,7 @@ pub struct Frame {
 	contents: Vec<Event>,
 	resolution: (usize, usize),
 }
+#[allow(dead_code)]
 impl Frame {
 	pub fn new(resolution: (usize, usize)) -> Frame {
 		Frame {
@@ -50,8 +50,8 @@ impl Frame {
 	}
 	pub fn apply(&mut self, used: HashMap<String, String>, event: &Event) -> () {
 		match &event.info {
-			EventType::JsStart(slug) => todo!(),
-			EventType::ImgStart(slug, res) => {
+			EventType::JsStart(_) => todo!(),
+			EventType::ImgStart(slug, _) => {
 				if self.assets.read().unwrap().get(slug).is_none() {
 					self.assets.write().unwrap().insert(
 						slug.to_string(),
@@ -66,6 +66,7 @@ impl Frame {
 	}
 }
 
+#[allow(dead_code)]
 impl Timeline {
 	pub fn render(&self, spec: Spec) {
 		let mut base = Frame::new(self.resolution);
@@ -89,7 +90,7 @@ impl Timeline {
 			// Write time as float.
 			.map(|frame| (frame, frame as f64 / self.rate as f64))
 			// Limit to frames within the length of the video.
-			.take_while(|(frame, time)| time < &self.length)
+			.take_while(|(_, time)| time < &self.length)
 			// Find events that have occurred before the current frame and haven't been consumed yet.
 			.map(|(frame, time)| {
 				let events_this_frame = events
@@ -105,10 +106,10 @@ impl Timeline {
 				}
 				(frame, time, base.clone())
 			})
-			// Comment this line if debugging, make sure it's not commented in commits
+			// Comment this line when debugging, make sure it's not commented in commits.
 			.par_bridge()
 			// Draw the frame.
-			.map(|(frame_count, time, frame)| {
+			.map(|(frame_count, _time, frame)| {
 				let mut result = vec![0u8; spec.resolution.0 * spec.resolution.1 * 4];
 				for event in frame.contents {
 					event.render(frame.assets.clone(), &mut result, spec.resolution);
@@ -116,6 +117,7 @@ impl Timeline {
 				println!("{}", frame_count);
 				(frame_count, result)
 			})
+			// Write the frame to a PNG file.
 			.for_each(|(frame_count, pixel_data)| {
 				let file = fs::OpenOptions::new()
 					.write(true)
@@ -171,6 +173,7 @@ impl Timeline {
 	}
 }
 
+#[allow(dead_code)]
 impl Event {
 	pub fn render(
 		&self,

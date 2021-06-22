@@ -1,8 +1,5 @@
-use std::{fs, time};
-
 use spec::Spec;
-use timeline::{Event, Frame, Timeline};
-
+use timeline::Timeline;
 mod gentle;
 mod spec;
 mod timeline;

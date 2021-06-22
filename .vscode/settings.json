@@ -1,9 +1,14 @@
 {
 	"cSpell.words": [
 		"Gentle's",
+		"PNGs",
+		"Popen",
 		"ffmpeg",
 		"libvpx",
+		"mkdir",
 		"reqwest",
-		"rgba"
+		"rgba",
+		"transcoding",
+		"vidbuild"
 	]
 }

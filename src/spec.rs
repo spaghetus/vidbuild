@@ -1,7 +1,7 @@
 use reqwest::blocking::{multipart, Client};
 use serde::Deserialize;
 use serde_json::Value;
-use std::{collections::HashMap, fs, io::Read};
+use std::{collections::HashMap, fs};
 
 use crate::{
 	gentle::GentleResponse,
@@ -100,7 +100,7 @@ impl Into<Timeline> for Spec {
 			serde_json::from_str(text).expect("Couldn't interpret Gentle's response")
 		};
 		println!("Re-associating our events with Gentle's timings");
-		let mut words = response.words.iter().filter(|word| {
+		let words = response.words.iter().filter(|word| {
 			word.case == "success"
 				&& word.start.is_some()
 				&& word.end.is_some()
