@@ -4,7 +4,7 @@ use serde_json::Value;
 use std::{collections::HashMap, fs};
 
 use crate::{
-	gentle::GentleResponse,
+	gentle::{GentleResponse, GentleWord},
 	timeline::{Event, EventType, Timeline},
 };
 
@@ -29,7 +29,9 @@ pub enum Asset {
 #[derive(Deserialize, Debug)]
 pub struct IntermediateEvent {
 	#[serde(skip_deserializing)]
-	offset: usize,
+	timestamp: usize,
+	absolute: Option<f64>,
+	relative: Option<f64>,
 	uuid: String,
 	info: EventType,
 }
@@ -44,7 +46,7 @@ impl Into<Timeline> for Spec {
 		// Build the list of intermediate events with character offsets.
 		println!("Parsing transcript for our purposes");
 		let events: Vec<IntermediateEvent> = {
-			let mut offset = 0usize;
+			let mut time = 0usize;
 			let mut json_accumulator = String::from("");
 			let mut json_depth = 0usize;
 			let mut output = vec![];
@@ -62,14 +64,14 @@ impl Into<Timeline> for Spec {
 					let mut new_event: IntermediateEvent =
 						match serde_json::from_str(&json_accumulator) {
 							Ok(v) => v,
-							Err(_) => panic!("Bad JSON at character {} of transcript", offset),
+							Err(_) => panic!("Bad JSON at character {} of transcript", time),
 						};
-					new_event.offset = offset;
+					new_event.timestamp = time;
 					json_accumulator = String::from("");
 					output.push(new_event)
 				}
-				if char == cleaned_transcript.chars().nth(offset + 1).unwrap_or(' ') {
-					offset += 1;
+				if char == cleaned_transcript.chars().nth(time + 1).unwrap_or(' ') {
+					time += 1;
 				}
 			}
 			if json_depth != 0 || json_accumulator.len() != 0 {
@@ -109,35 +111,58 @@ impl Into<Timeline> for Spec {
 		});
 		let mut events = events.iter();
 		let mut output: Vec<Event> = vec![];
+		let mut last_good_time = 0.0;
+		let mut last_good_offset: usize = 0;
 		loop {
 			let this_event = match events.next() {
 				Some(v) => v,
 				None => break,
 			};
-			let corresponding_word = match words
-				.clone()
-				.filter(|word| {
-					word.startOffset.unwrap() < this_event.offset
-						&& word.endOffset.unwrap() + 2 > this_event.offset
-				})
-				.next()
-			{
-				Some(v) => v,
-				None => {
-					println!(
-						"Beware: We couldn't find a Gentle timing that corresponds with {:?}",
-						this_event
-					);
-					continue;
+			let new_event = match (this_event.absolute, this_event.relative) {
+				(None, rel) => {
+					let corresponding_word: GentleWord = match words
+						.clone()
+						.filter(|word| {
+							word.startOffset.unwrap() < this_event.timestamp
+								&& word.endOffset.unwrap() + 2 > this_event.timestamp
+						})
+						.next()
+					{
+						Some(v) => {
+							last_good_offset = v.endOffset.unwrap();
+							last_good_time = v.end.unwrap();
+							v.clone()
+						}
+						None => GentleWord {
+							case: "???".to_string(),
+							start: Some(last_good_time),
+							word: Some("???".to_string()),
+							startOffset: Some(last_good_offset),
+							endOffset: Some(last_good_offset),
+							phones: Some(vec![]),
+							end: Some(last_good_time),
+							alignedWord: Some("???".to_string()),
+						},
+					};
+					Event {
+						timestamp: corresponding_word.start.unwrap() + rel.unwrap_or(0.0),
+						uuid: this_event.uuid.clone(),
+						info: this_event.info.clone(),
+					}
 				}
-			};
-			let new_event = Event {
-				timestamp: corresponding_word.start.unwrap(),
-				uuid: this_event.uuid.clone(),
-				info: this_event.info.clone(),
+				(Some(abs), rel) => Event {
+					timestamp: abs + rel.unwrap_or(0.0),
+					uuid: this_event.uuid.clone(),
+					info: this_event.info.clone(),
+				},
 			};
 			output.push(new_event)
 		}
+		output.sort_by(|a, b| {
+			a.timestamp
+				.partial_cmp(&b.timestamp)
+				.unwrap_or(std::cmp::Ordering::Equal)
+		});
 		let length = words.clone().last().unwrap().end.unwrap() + 2f64;
 		println!("Done building Timeline");
 		Timeline {

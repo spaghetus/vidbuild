@@ -8,7 +8,7 @@ pub struct GentleResponse {
 }
 
 #[allow(non_snake_case)]
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct GentleWord {
 	pub case: String,
 	pub start: Option<f64>,
@@ -20,7 +20,7 @@ pub struct GentleWord {
 	pub alignedWord: Option<String>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct GentlePhoneme {
 	pub duration: f64,
 	pub phone: String,
