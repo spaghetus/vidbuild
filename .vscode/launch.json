@@ -1,0 +1,45 @@
+{
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug executable 'vidbuild-3'",
+			"cargo": {
+				"args": [
+					"build",
+					"--bin=vidbuild-3",
+					"--package=vidbuild-3"
+				],
+				"filter": {
+					"name": "vidbuild-3",
+					"kind": "bin"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}/example_project"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug unit tests in executable 'vidbuild-3'",
+			"cargo": {
+				"args": [
+					"test",
+					"--no-run",
+					"--bin=vidbuild-3",
+					"--package=vidbuild-3"
+				],
+				"filter": {
+					"name": "vidbuild-3",
+					"kind": "bin"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		}
+	]
+}

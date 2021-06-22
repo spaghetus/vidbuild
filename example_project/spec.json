@@ -1,0 +1,16 @@
+{
+	"used": {
+		"title": "./title.png",
+		"script_icon": "./script_icon.png",
+		"audio_icon": "./audio_icon.png"
+	},
+	"audio": "./test.wav",
+	"transcript": "./test.txt",
+	"output": "./out.mp4",
+	"work": "./work.dir",
+	"rate": 60,
+	"resolution": [
+		1280,
+		720
+	]
+}
