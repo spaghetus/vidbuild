@@ -1,4 +1,5 @@
-This {"absolute":0,"uuid":"title","info":{"ImgStart":["title",[0,0,1280,720]]}} video was timed with Vidbuild. Only this {"uuid":"script_icon","info":{"ImgStart":["script_icon",[150,150,400,400]]}} script file and an accompanying {"uuid":"audio_icon","info":{"ImgStart":["audio_icon",[650,150,400,400]]}} audio file were used.
+{"uuid":"title","info":{"ImgStart":["title",[0,0,1280,720]]}}
+This video was timed with Vidbuild. Only this {"uuid":"script_icon","info":{"ImgStart":["script_icon",[150,150,400,400]]}} script file and an accompanying {"uuid":"audio_icon","info":{"ImgStart":["audio_icon",[650,150,400,400]]}} audio file were used.
 
 The images will now disappear.
 {"uuid":"title","info":"ImgEnd"}
